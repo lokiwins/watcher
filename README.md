@@ -1,6 +1,6 @@
 # Watcher
 
-**TODO: Add description**
+Watcher spawned out of a need to track changes within HPA's. It can be used to watch other things.
 
 ## Installation
 
