@@ -44,7 +44,7 @@ Watchers can be configured like so:
 ```MyWatcher.ex
 defmodule Watcher.Test do
   use Watcher,
-    api_endpoint: "autoscaling", # Matches What the Kubernetes API has
+    api_group_name: "autoscaling", # Matches What the Kubernetes API has
     api_version: "v2beta2", # Same here
     resource_type: "horizontalpodautoscalers", # Same here
     namespace: "default", # Namespace the resource to watch is in
