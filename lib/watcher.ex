@@ -45,7 +45,7 @@ defmodule Watcher do
         resource_name = Keyword.get(config, :resource_name, nil)
         timeout = Keyword.get(config, :timeout, 300)
 
-        # Get list of HPAs
+        # Initial Get Request to setup state.
         path = generate_get_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout)
         {:ok, response} = make_request(path, %__MODULE__{namespace: namespace})
 
