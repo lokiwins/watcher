@@ -27,6 +27,8 @@ config :watcher,
 
 ```
 
+Runtime Configuration
+
 ```runtime.exs
 with {:ok, token} <- File.read("/var/run/secrets/kubernetes.io/serviceaccount/token") do
   cacert = File.read!("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
