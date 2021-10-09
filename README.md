@@ -17,14 +17,25 @@ end
 
 ## Configuration
 
-By default the configuration used is the service account found within the pod running the watcher, but it can be configured to work with `kubectl proxy --port=<some-port>` or some other endpoint.
+You can configure the watcher to use token auth, `kubectl proxy`, or the better option would be to use a pod service account and then adjust runtime.exs.
 
 ```config.exs
 config :watcher,
-  token: <kubernetes-api-token>,
-  cacert: <kubernetes-ca-cert>,
-  endpoint: "<kubernetes-endpoint>" # ex. "localhost:8080"
+  token: <kubernetes-api-token>, # Optional
+  cacert: <kubernetes-ca-cert>, # Optional
+  endpoint: "<kubernetes-endpoint>" # Required ex. "localhost:8080" when using `kubctl proxy --port=8080`
 
+```
+
+```runtime.exs
+with {:ok, token} <- File.read("/var/run/secrets/kubernetes.io/serviceaccount/token") do
+  cacert = File.read!("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+  endpoint = System.get_env("KUBERNETES_SERVICE_HOST")
+
+  Application.put_env(:watcher, :endpoint, endpoint)
+  Application.put_env(:watcher, :token, token)
+  Application.put_env(:watcher, :cacert, cacert)
+end
 ```
 
 Watchers can be configured like so:
