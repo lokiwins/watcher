@@ -34,11 +34,42 @@ defmodule Watcher.Test do
     api_endpoint: "autoscaling", # Matches What the Kubernetes API has
     api_version: "v2beta2", # Same here
     resource_type: "horizontalpodautoscalers", # Same here
-    namespace: "staging", # Namespace the resource to watch is in
-    resource_names: ["a", "b", "c"] # Optional List of resource names to watch. If not provided all will be watched.
+    namespace: "default", # Namespace the resource to watch is in
+    resource_name: "my-hpa" # Optional Resource Name to watch. If no Resource Name provided defaults to watching all.
 end
 ```
 
+Service Account Configuration example for watching HPA's:
+```
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: watcher-service-account
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: watcher-service-account
+rules:
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: watcher-service-account
+subjects:
+- kind: ServiceAccount
+  name: watcher-service-account
+roleRef:
+  kind: Role
+  name: watcher-service-account
+  apiGroup: rbac.authorization.k8s.io
+
+```
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/watcher](https://hexdocs.pm/watcher).

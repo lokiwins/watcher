@@ -39,13 +39,14 @@ defmodule Watcher do
       def init(config) do
         # Setup Initial State
         namespace = Keyword.get(config, :namespace)
-        api_endpoint = Keyword.get(config, :api_endpoint)
+        api_endpoint = Keyword.get(config, :api_group_name)
         api_version = Keyword.get(config, :api_version)
         resource_type = Keyword.get(config, :resource_type)
+        resource_name = Keyword.get(config, :resource_name, nil)
         timeout = Keyword.get(config, :timeout, 300)
 
         # Get list of HPAs
-        path = generate_get_path(api_endpoint, api_version, namespace, resource_type, timeout)
+        path = generate_get_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout)
         {:ok, response} = make_request(path, %__MODULE__{namespace: namespace})
 
         hpa_state = Map.get(response, :body)
@@ -57,7 +58,7 @@ defmodule Watcher do
 
 
         # Start watch
-        {:connect, :init, %__MODULE__{namespace: namespace, hpa_state: hpa_state, watch_path: generate_watch_path(api_endpoint, api_version, namespace, resource_type, timeout)}}
+        {:connect, :init, %__MODULE__{namespace: namespace, hpa_state: hpa_state, watch_path: generate_watch_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout)}}
       end
 
       @impl true
@@ -153,10 +154,14 @@ defmodule Watcher do
         end
       end
 
-      defp generate_get_path(api_endpoint, api_version, namespace, resource_type, timeout),
+      defp generate_get_path(api_endpoint, api_version, namespace, resource_type, nil, timeout),
         do: "/apis/#{api_endpoint}/#{api_version}/namespaces/#{namespace}/#{resource_type}?timeoutSeconds=#{timeout}"
-      defp generate_watch_path(api_endpoint, api_version, namespace, resource_type, timeout),
+      defp generate_get_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout),
+        do: "/apis/#{api_endpoint}/#{api_version}/namespaces/#{namespace}/#{resource_type}/#{resource_name}?timeoutSeconds=#{timeout}"
+      defp generate_watch_path(api_endpoint, api_version, namespace, resource_type, nil, timeout),
         do: "/apis/#{api_endpoint}/#{api_version}/watch/namespaces/#{namespace}/#{resource_type}?timeoutSeconds=#{timeout}"
+      defp generate_watch_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout),
+        do: "/apis/#{api_endpoint}/#{api_version}/watch/namespaces/#{namespace}/#{resource_type}/#{resource_name}?timeoutSeconds=#{timeout}"
     end
   end
 end

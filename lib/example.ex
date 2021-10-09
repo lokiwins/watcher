@@ -1,7 +1,7 @@
-# defmodule Watcher.Test do
+# defmodule Watcher.Example do
 #   use Watcher,
-#     api_endpoint: "autoscaling",
+#     api_group_name: "autoscaling",
 #     api_version: "v2beta2",
 #     resource_type: "horizontalpodautoscalers",
-#     namespace: "staging"
+#     namespace: "default"
 # end
