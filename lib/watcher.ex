@@ -24,7 +24,8 @@ defmodule Watcher do
         Keyword.merge(@config, config)
       end
 
-      def state, do: GenServer.call(Watcher, :state)
+      def state, do: GenServer.call(__MODULE__, :state)
+
     end
   end
 
