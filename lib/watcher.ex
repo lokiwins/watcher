@@ -32,7 +32,7 @@ defmodule Watcher do
   require Logger
   alias Watcher.Api
 
-  defstruct resource_version: nil, response: nil, buffer: "", namespace: nil, hpa_state: %{}, watch_path: nil
+  defstruct resource_version: nil, response: nil, buffer: "", namespace: nil, watch_state: %{}, watch_path: nil
 
   @default_opts [
     recv_timeout: 310_000
@@ -53,7 +53,7 @@ defmodule Watcher do
     path = generate_get_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout)
     {:ok, response} = make_request(path, %__MODULE__{namespace: namespace})
 
-    hpa_state = Map.get(response, :body)
+    watch_state = Map.get(response, :body)
     |> Jason.decode!()
     |> Map.get("items")
     |> Enum.reduce(%{}, fn hpa_spec, acc ->
@@ -62,7 +62,7 @@ defmodule Watcher do
 
 
     # Start watch
-    {:connect, :init, %__MODULE__{namespace: namespace, hpa_state: hpa_state, watch_path: generate_watch_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout)}}
+    {:connect, :init, %__MODULE__{namespace: namespace, watch_state: watch_state, watch_path: generate_watch_path(api_endpoint, api_version, namespace, resource_type, resource_name, timeout)}}
   end
 
   @doc false
@@ -118,11 +118,11 @@ defmodule Watcher do
       Logger.debug(message)
       event = Jason.decode!(message)
 
-      hpa_state = state.hpa_state
+      watch_state = state.watch_state
       |> Map.put(event["object"]["metadata"]["name"], event["object"])
 
       Map.put(state, :resource_version, event["object"]["metadata"]["resourceVersion"])
-      |> Map.put(:hpa_state, hpa_state)
+      |> Map.put(:watch_state, watch_state)
     end
 
     next_response(state)
@@ -138,7 +138,7 @@ defmodule Watcher do
   @doc false
   @impl true
   def handle_call(:state, _, state) do
-    {:reply, state.hpa_state, state}
+    {:reply, state.watch_state, state}
   end
 
   defp make_request(path, state, options \\ []) do
