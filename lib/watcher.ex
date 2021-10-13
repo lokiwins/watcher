@@ -13,8 +13,9 @@ defmodule Watcher do
         }
       end
 
-      def start_link(_args) do
-        Connection.start_link(Watcher, config(), name: __MODULE__)
+      def start_link(config) do
+        watcher_config = Keyword.merge(config, config())
+        Connection.start_link(Watcher, watcher_config, name: __MODULE__)
       end
 
       def config do
